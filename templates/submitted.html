@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Submitted</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --ink:#0d1117; --paper:#f5f0e8; --accent:#c0392b; --green:#1a7a4a; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh;
+    background: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wrap {
+    max-width: 460px;
+    width: 90%;
+    text-align: center;
+    animation: fadeUp 0.6s ease;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  .check-circle {
+    width: 80px; height: 80px;
+    border: 3px solid var(--green);
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    margin-bottom: 24px;
+    color: var(--green);
+    animation: scaleIn 0.4s 0.3s both;
+  }
+  @keyframes scaleIn { from{transform:scale(0)} to{transform:scale(1)} }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    color: var(--paper);
+    margin-bottom: 12px;
+  }
+  .subtext {
+    font-size: 15px;
+    color: #888;
+    line-height: 1.7;
+    margin-bottom: 32px;
+  }
+  .info-box {
+    border: 1px solid #2a2a2a;
+    padding: 20px 24px;
+    text-align: left;
+    margin-bottom: 28px;
+  }
+  .info-box p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.8;
+  }
+  .info-box strong { color: var(--paper); }
+  .home-btn {
+    display: inline-block;
+    padding: 12px 32px;
+    border: 2px solid #333;
+    color: #888;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .home-btn:hover { border-color: var(--paper); color: var(--paper); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="check-circle">✓</div>
+  <h1>Quiz Submitted</h1>
+  <p class="subtext">
+    Thank you, <strong style="color:var(--paper)">{{ name }}</strong>.<br>
+    Your answers have been recorded successfully.
+  </p>
+  <div class="info-box">
+    <p>
+      <strong>What happens next?</strong><br>
+      Your results will be reviewed by the admissions team.
+      You will be contacted regarding your admission status.
+      Results are not displayed to students.
+    </p>
+  </div>
+  <a href="/student/login" class="home-btn">← Back to Home</a>
+</div>
+</body>
+</html>

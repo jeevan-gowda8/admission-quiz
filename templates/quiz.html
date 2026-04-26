@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admission Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d1117;
+    --paper: #f5f0e8;
+    --accent: #c0392b;
+    --green: #1a7a4a;
+    --muted: #7a6f5e;
+    --border: #d4cfc4;
+    --selected: #0d1117;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh;
+    background: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--paper);
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: var(--ink);
+    border-bottom: 2px solid #2a2a2a;
+    padding: 0 24px;
+    height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 100;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .exam-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #888;
+  }
+  .student-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--paper);
+  }
+
+  /* TIMER */
+  .timer-wrap {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .timer-label { font-size: 11px; letter-spacing: 1px; color: #888; text-transform: uppercase; }
+  .timer-display {
+    font-family: 'DM Mono', monospace;
+    font-size: 28px;
+    font-weight: 500;
+    color: #fff;
+    min-width: 60px;
+    text-align: right;
+    transition: color 0.3s;
+  }
+  .timer-display.warning { color: #e67e22; }
+  .timer-display.danger  { color: var(--accent); animation: pulse 0.5s infinite alternate; }
+  @keyframes pulse { from { opacity:1; } to { opacity:0.5; } }
+
+  /* PROGRESS */
+  .progress-bar-wrap {
+    position: fixed; top: 60px; left: 0; right: 0;
+    height: 3px; background: #1a1a1a; z-index: 99;
+  }
+  .progress-bar {
+    height: 100%; background: var(--accent);
+    width: 0%; transition: width 0.4s ease;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 90px 24px 80px;
+  }
+
+  /* LOADING SCREEN */
+  .loading-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 20px;
+  }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid #333;
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: #888; font-size: 14px; letter-spacing: 1px; }
+
+  /* QUESTION CARD */
+  .question-card {
+    display: none;
+    animation: slideIn 0.3s ease;
+  }
+  .question-card.active { display: block; }
+  @keyframes slideIn {
+    from { opacity:0; transform:translateX(20px); }
+    to   { opacity:1; transform:translateX(0); }
+  }
+
+  .q-meta {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 20px;
+  }
+  .q-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: #555;
+    letter-spacing: 1px;
+  }
+  .subject-tag {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #aaa;
+  }
+  .diff-tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 3px 8px;
+    border: 1px solid #3a1a1a;
+    background: #1f0f0f;
+  }
+
+  .question-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 21px;
+    line-height: 1.5;
+    color: #f0ebe3;
+    margin-bottom: 28px;
+  }
+
+  .options { display: grid; gap: 10px; }
+  .option {
+    padding: 14px 18px;
+    border: 1.5px solid #2a2a2a;
+    background: #111;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 14px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .option:hover { border-color: #555; background: #1a1a1a; }
+  .option.selected {
+    border-color: var(--paper);
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .opt-letter {
+    width: 28px; height: 28px;
+    border: 1.5px solid currentColor;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+    font-family: 'DM Mono', monospace;
+  }
+  .option.selected .opt-letter {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .opt-text { font-size: 15px; line-height: 1.4; }
+
+  /* NAVIGATION */
+  .nav-wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 28px;
+  }
+  .btn-nav {
+    padding: 10px 22px;
+    border: 2px solid #333;
+    background: transparent;
+    color: #aaa;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-nav:hover:not(:disabled) { border-color: var(--paper); color: var(--paper); }
+  .btn-nav:disabled { opacity: 0.2; cursor: default; }
+  .btn-submit {
+    padding: 12px 28px;
+    background: var(--accent);
+    border: 2px solid var(--accent);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 3px 3px 0 #7a1a10;
+  }
+  .btn-submit:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 #7a1a10; }
+
+  /* QUESTION DOTS */
+  .dots-wrap {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-bottom: 28px;
+  }
+  .q-dot {
+    width: 20px; height: 20px;
+    border: 1.5px solid #333;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 9px;
+    font-family: 'DM Mono', monospace;
+    display: flex; align-items: center; justify-content: center;
+    color: #555;
+    transition: all 0.1s;
+  }
+  .q-dot.current { border-color: var(--paper); color: var(--paper); }
+  .q-dot.answered { background: #2a2a2a; border-color: #555; color: #aaa; }
+  .q-dot.answered.current { background: var(--paper); border-color: var(--paper); color: var(--ink); }
+
+  /* SUBMIT CONFIRM MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: var(--ink);
+    border: 2px solid var(--paper);
+    box-shadow: 8px 8px 0 var(--accent);
+    padding: 36px;
+    max-width: 400px;
+    width: 90%;
+    animation: popIn 0.2s ease;
+  }
+  @keyframes popIn { from { transform:scale(0.9); opacity:0; } to { transform:scale(1); opacity:1; } }
+  .modal h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    margin-bottom: 10px;
+  }
+  .modal p { font-size: 14px; color: #aaa; line-height: 1.6; margin-bottom: 24px; }
+  .modal-btns { display: flex; gap: 12px; }
+  .btn-cancel {
+    flex: 1; padding: 12px;
+    border: 2px solid #333; background: transparent;
+    color: #aaa; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .btn-cancel:hover { border-color: var(--paper); color: var(--paper); }
+  .btn-confirm {
+    flex: 1; padding: 12px;
+    background: var(--accent); border: 2px solid var(--accent);
+    color: #fff; font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-confirm:hover { opacity: 0.85; }
+  .unanswered-count { 
+    color: #e67e22; font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="dot"></div>
+    <span class="exam-label">Admission Quiz</span>
+    <span style="color:#333">|</span>
+    <span class="student-name">{{ student_name }}</span>
+  </div>
+  <div class="timer-wrap">
+    <span class="timer-label">Time</span>
+    <div class="timer-display" id="timer">30</div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div class="main">
+  <div class="loading-screen" id="loadingScreen">
+    <div class="spinner"></div>
+    <div class="loading-text">Generating your questions…</div>
+  </div>
+
+  <div id="quizContent" style="display:none">
+    <div class="dots-wrap" id="dotContainer"></div>
+    <div id="questionContainer"></div>
+  </div>
+</div>
+
+<!-- Submit Modal -->
+<div class="modal-overlay" id="submitModal">
+  <div class="modal">
+    <h3>Submit Quiz?</h3>
+    <p>You have <span class="unanswered-count" id="unansweredCount">0</span> unanswered questions. This action cannot be undone.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Review</button>
+      <button class="btn-confirm" onclick="confirmSubmit()">Submit Now</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let questions = [];
+let userAnswers = {};
+let currentQ = 0;
+let timerInterval = null;
+let timeLeft = 30;
+let submitted = false;
+
+const OPTION_LABELS = ['A','B','C','D'];
+
+// ── INIT ──
+async function init() {
+  try {
+    const res = await fetch('/api/generate_quiz');
+    const data = await res.json();
+    if (data.error) { alert('Error: ' + data.error); return; }
+    questions = data;
+    renderDots();
+    renderQuestion(0);
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('quizContent').style.display = 'block';
+    startTimer();
+  } catch(e) {
+    alert('Failed to load quiz. Please refresh.');
+  }
+}
+
+// ── TIMER ──
+function startTimer() {
+  const display = document.getElementById('timer');
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    display.textContent = timeLeft;
+    display.className = 'timer-display' + (timeLeft <= 10 ? ' danger' : timeLeft <= 20 ? ' warning' : '');
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      autoSubmit();
+    }
+  }, 1000);
+}
+
+function autoSubmit() {
+  if (submitted) return;
+  submitted = true;
+  submitQuiz();
+}
+
+// ── RENDER ──
+function renderDots() {
+  const c = document.getElementById('dotContainer');
+  c.innerHTML = '';
+  questions.forEach((q,i) => {
+    const d = document.createElement('div');
+    d.className = 'q-dot' + (i===0?' current':'') + (userAnswers[i+1]?' answered':'');
+    d.textContent = i+1;
+    d.onclick = () => goTo(i);
+    c.children[i] ? null : c.appendChild(d);
+    c.appendChild(d);
+  });
+}
+
+function updateDots() {
+  const dots = document.querySelectorAll('.q-dot');
+  dots.forEach((d,i) => {
+    d.className = 'q-dot';
+    if (i === currentQ) d.classList.add('current');
+    if (userAnswers[i+1]) d.classList.add('answered');
+  });
+}
+
+function updateProgress() {
+  const answered = Object.keys(userAnswers).length;
+  document.getElementById('progressBar').style.width = (answered / questions.length * 100) + '%';
+}
+
+function renderQuestion(idx) {
+  const q = questions[idx];
+  const container = document.getElementById('questionContainer');
+  container.innerHTML = '';
+
+  const card = document.createElement('div');
+  card.className = 'question-card active';
+  card.innerHTML = `
+    <div class="q-meta">
+      <span class="q-num">${String(idx+1).padStart(2,'0')} / ${questions.length}</span>
+      <span class="subject-tag">${q.subject}</span>
+      <span class="diff-tag">${q.difficulty}</span>
+    </div>
+    <div class="question-text">${q.question}</div>
+    <div class="options" id="options-${idx}">
+      ${q.options.map((opt,oi) => `
+        <div class="option ${userAnswers[q.id] === OPTION_LABELS[oi] ? 'selected' : ''}"
+             onclick="selectOption(${idx}, ${oi}, '${OPTION_LABELS[oi]}')">
+          <div class="opt-letter">${OPTION_LABELS[oi]}</div>
+          <div class="opt-text">${opt}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="nav-wrap">
+      <button class="btn-nav" onclick="goTo(${idx-1})" ${idx===0?'disabled':''}>← Prev</button>
+      ${idx === questions.length-1
+        ? `<button class="btn-submit" onclick="showSubmitModal()">Submit Quiz</button>`
+        : `<button class="btn-nav" onclick="goTo(${idx+1})">Next →</button>`
+      }
+    </div>
+  `;
+  container.appendChild(card);
+}
+
+function selectOption(qIdx, optIdx, label) {
+  const q = questions[qIdx];
+  userAnswers[q.id] = label;
+  updateDots();
+  updateProgress();
+  renderQuestion(qIdx);
+  // Auto advance after brief delay
+  if (qIdx < questions.length - 1) {
+    setTimeout(() => goTo(qIdx + 1), 350);
+  }
+}
+
+function goTo(idx) {
+  if (idx < 0 || idx >= questions.length) return;
+  currentQ = idx;
+  updateDots();
+  renderQuestion(idx);
+}
+
+// ── SUBMIT ──
+function showSubmitModal() {
+  const unanswered = questions.length - Object.keys(userAnswers).length;
+  document.getElementById('unansweredCount').textContent = unanswered;
+  document.getElementById('submitModal').classList.add('show');
+}
+function closeModal() {
+  document.getElementById('submitModal').classList.remove('show');
+}
+function confirmSubmit() {
+  if (submitted) return;
+  submitted = true;
+  clearInterval(timerInterval);
+  closeModal();
+  submitQuiz();
+}
+
+async function submitQuiz() {
+  try {
+    const res = await fetch('/api/submit_quiz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers: userAnswers })
+    });
+    const data = await res.json();
+    if (data.success) {
+      window.location.href = '/submitted';
+    } else {
+      alert('Submission failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch(e) {
+    alert('Network error during submission. Please try again.');
+    submitted = false;
+  }
+}
+
+// Prevent back navigation
+history.pushState(null, '', location.href);
+window.onpopstate = () => history.pushState(null, '', location.href);
+
+init();
+</script>
+</body>
+</html>
