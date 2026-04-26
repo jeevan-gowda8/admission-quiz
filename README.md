@@ -15,22 +15,6 @@ mysql -u root -p < schema.sql
 
 ---
 
-## 2. Environment Variables
-
-Create a `.env` file or export these variables:
-
-```bash
-export SECRET_KEY="your-secret-key-here"
-export DB_HOST="localhost"
-export DB_USER="root"
-export DB_PASSWORD="your_mysql_password"
-export DB_NAME="admission_quiz"
-export ADMIN_PASSWORD="admin123"
-export OPENAI_API_KEY="sk-..."
-```
-
----
-
 ## 3. Install Dependencies
 
 ```bash
