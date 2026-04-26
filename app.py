@@ -12,7 +12,7 @@ ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 DB_CONFIG = {
     'host':     os.environ.get('DB_HOST',     'localhost'),
     'user':     os.environ.get('DB_USER',     'root'),
-    'password': os.environ.get('DB_PASSWORD', ''),
+    'password': os.environ.get('DB_PASSWORD', 'YRIgRdNGzoBQNjCHuqOYnYeKMWwMEaao'),
     'database': os.environ.get('DB_NAME',     'admission_quiz'),
     'port':     int(os.environ.get('DB_PORT', 3306)),
 }
