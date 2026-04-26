@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Results</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d1117;
+    --paper: #f5f0e8;
+    --accent: #c0392b;
+    --green: #1a7a4a;
+    --green-bg: #0d1f16;
+    --muted: #888;
+    --border: #1f1f1f;
+    --surface: #0f0f0f;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    min-height: 100vh;
+    background: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--paper);
+  }
+
+  /* TOPBAR */
+  .topbar {
+    background: #0a0a0a;
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 58px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .topbar-left {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .topbar-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px; color: var(--paper);
+  }
+  .badge {
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    padding: 3px 8px; background: #1a1a1a; border: 1px solid #333;
+    color: var(--muted);
+  }
+  .logout-btn {
+    font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+    color: #555; text-decoration: none;
+    border: 1px solid #2a2a2a; padding: 6px 14px;
+    transition: all 0.15s;
+  }
+  .logout-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* MAIN */
+  .main { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+  .stat-card.total::before { background: #555; }
+  .stat-card.selected::before { background: var(--green); }
+  .stat-card.rejected::before { background: var(--accent); }
+  .stat-label {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 8px;
+  }
+  .stat-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 36px; font-weight: 500;
+  }
+  .stat-card.total .stat-value { color: var(--paper); }
+  .stat-card.selected .stat-value { color: #2ecc71; }
+  .stat-card.rejected .stat-value { color: var(--accent); }
+
+  /* SECTION TITLE */
+  .section-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; color: var(--paper);
+  }
+  .count-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: var(--muted);
+    border: 1px solid var(--border); padding: 4px 10px;
+  }
+
+  /* SEARCH */
+  .search-wrap { margin-bottom: 16px; }
+  .search-input {
+    width: 300px; padding: 9px 14px;
+    background: var(--surface); border: 1px solid #333;
+    color: var(--paper); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--paper); }
+  .search-input::placeholder { color: #444; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead tr {
+    background: #0a0a0a;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--muted); font-weight: 500;
+  }
+  tbody tr {
+    border-bottom: 1px solid #181818;
+    transition: background 0.1s;
+  }
+  tbody tr:hover { background: #111; }
+  td { padding: 13px 16px; }
+
+  .rank-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px; color: var(--muted);
+  }
+  .rank-1 { color: #f1c40f; }
+  .rank-2 { color: #bdc3c7; }
+  .rank-3 { color: #cd7f32; }
+
+  .student-name { font-weight: 500; color: var(--paper); }
+  .reg-no {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px; color: #666;
+  }
+
+  .score-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+  }
+  .score-bar {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .bar-bg {
+    flex: 1; height: 4px; background: #1a1a1a;
+    max-width: 80px; border-radius: 2px;
+    overflow: hidden;
+  }
+  .bar-fill { height: 100%; border-radius: 2px; }
+
+  .status-pill {
+    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 4px 10px; font-weight: 600;
+    display: inline-block;
+  }
+  .status-pill.selected {
+    background: var(--green-bg);
+    color: #2ecc71;
+    border: 1px solid #1a4a2a;
+  }
+  .status-pill.rejected {
+    background: #1a0a0a;
+    color: #e07070;
+    border: 1px solid #5a1a1a;
+  }
+
+  .ts { font-size: 11px; color: #444; font-family: 'DM Mono', monospace; }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: var(--muted); font-size: 14px;
+  }
+  .empty-state .big { font-size: 32px; margin-bottom: 12px; }
+
+  @media(max-width:600px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .search-input { width: 100%; }
+    th:nth-child(6), td:nth-child(6) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="topbar-title">Admin Dashboard</span>
+    <span class="badge">Restricted</span>
+  </div>
+  <a href="/admin/logout" class="logout-btn">Logout</a>
+</div>
+
+<div class="main">
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card total">
+      <div class="stat-label">Total Attempted</div>
+      <div class="stat-value">{{ total_attempted }}</div>
+    </div>
+    <div class="stat-card selected">
+      <div class="stat-label">Selected</div>
+      <div class="stat-value">{{ total_selected }}</div>
+    </div>
+    <div class="stat-card rejected">
+      <div class="stat-label">Rejected</div>
+      <div class="stat-value">{{ total_rejected }}</div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="section-head">
+    <div class="section-title">Rank List</div>
+    <div class="count-badge">{{ results|length }} students</div>
+  </div>
+
+  <div class="search-wrap">
+    <input type="text" class="search-input" id="searchInput"
+           placeholder="Search by name or register number…" oninput="filterTable()">
+  </div>
+
+  <div class="table-wrap">
+    {% if results %}
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Student Name</th>
+          <th>Register No.</th>
+          <th>Score</th>
+          <th>Status</th>
+          <th>Submitted At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results %}
+        <tr>
+          <td>
+            <span class="rank-num {% if r.rank == 1 %}rank-1{% elif r.rank == 2 %}rank-2{% elif r.rank == 3 %}rank-3{% endif %}">
+              #{{ r.rank }}
+            </span>
+          </td>
+          <td><span class="student-name">{{ r.name }}</span></td>
+          <td><span class="reg-no">{{ r.reg_no }}</span></td>
+          <td>
+            <div class="score-bar">
+              <span class="score-cell" style="color:{% if r.score >= 20 %}#2ecc71{% elif r.score >= 15 %}#e67e22{% else %}#e07070{% endif %}">
+                {{ r.score }}/30
+              </span>
+              <div class="bar-bg">
+                <div class="bar-fill" style="width:{{ (r.score/30*100)|int }}%; background:{% if r.score >= 20 %}#1a7a4a{% elif r.score >= 15 %}#e67e22{% else %}#c0392b{% endif %}"></div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="status-pill {{ r.status|lower }}">{{ r.status }}</span>
+          </td>
+          <td>
+            <span class="ts">{{ r.timestamp.strftime('%d %b %Y, %H:%M') if r.timestamp else '—' }}</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <div class="big">📋</div>
+      No results yet. Students who complete the quiz will appear here.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function filterTable() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const rows = document.querySelectorAll('#resultsTable tbody tr');
+  rows.forEach(row => {
+    const text = row.textContent.toLowerCase();
+    row.style.display = text.includes(query) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>
